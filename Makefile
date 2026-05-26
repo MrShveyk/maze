@@ -1,6 +1,8 @@
-CXX      ?= g++
-CXXFLAGS ?= -std=c++17 -Wall -Wextra -Wpedantic -O2
-LDFLAGS  ?=
+CXX            ?= g++
+CXXFLAGS       ?= -std=c++17 -Wall -Wextra -Wpedantic -O2
+LDFLAGS        ?=
+EXTRA_CXXFLAGS ?=
+EXTRA_LDFLAGS  ?=
 
 SRC_DIR  := src
 BUILD    := build
@@ -17,10 +19,10 @@ IMAGE    ?= maze
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) $(EXTRA_CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(EXTRA_LDFLAGS)
 
 $(BUILD)/%.o: $(SRC_DIR)/%.cpp | $(BUILD)
-	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(EXTRA_CXXFLAGS) -MMD -MP -c $< -o $@
 
 $(BUILD):
 	mkdir -p $(BUILD)
