@@ -1,0 +1,43 @@
+@startuml
+title Ход игрока (FORWARD / BACK / LEFT / RIGHT)
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundCorner 0
+skinparam defaultFontName "Helvetica"
+skinparam defaultFontSize 13
+skinparam sequence {
+    ArrowColor #111111
+    LifeLineBorderColor #111111
+    LifeLineBackgroundColor #FFFFFF
+    ParticipantBorderColor #111111
+    ParticipantBackgroundColor #FFFFFF
+    ParticipantFontColor #111111
+    GroupBorderColor #111111
+}
+
+participant "Игрок (клиент)" as Client
+participant "Сессия\n(дочерний процесс)" as Server
+
+Client -> Server : FORWARD | BACK | LEFT | RIGHT
+Server -> Server : Maze::move(dx, dy)
+
+alt Успешный ход, цель не достигнута
+    Server --> Client : OK <x> <y> <ходов>
+else Стена
+    Server --> Client : WALL <ходов>
+else Игрок достиг цели
+    Server --> Client : WIN
+    Server -> Server : close(socket)
+else Кончились ходы
+    Server --> Client : LOSE
+    Server -> Server : close(socket)
+else Некорректное сообщение
+    Server --> Client : ERR <текст>
+    Server -> Server : close(socket)
+end
+
+note over Client, Server
+  В режиме PERF (тестирование производительности)
+  поле <ходов> равно -1, лимит не действует.
+end note
+@enduml

@@ -1,0 +1,42 @@
+@startuml
+title Полная партия (общая последовательность сообщений)
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundCorner 0
+skinparam defaultFontName "Helvetica"
+skinparam defaultFontSize 13
+skinparam sequence {
+    ArrowColor #111111
+    LifeLineBorderColor #111111
+    LifeLineBackgroundColor #FFFFFF
+    ParticipantBorderColor #111111
+    ParticipantBackgroundColor #FFFFFF
+    ParticipantFontColor #111111
+}
+
+participant "Игрок (клиент)"        as Client
+participant "Сервер\n(мастер-процесс)" as Master
+participant "Сессия\n(дочерний процесс)" as Child
+
+[-> Client : Запуск\n-c -n egor
+
+Client -> Master : TCP connect, порт 4321
+Master -> Child  : fork()
+Client -> Child  : HELLO egor
+Child --> Client : SIZE 3
+
+Client -> Child  : FORWARD
+Child --> Client : OK 0 1 9
+
+Client -> Child  : RIGHT
+Child --> Client : WALL 8
+
+Client -> Child  : FORWARD
+Child --> Client : OK 1 1 7
+
+...
+
+Client -> Child  : RIGHT
+Child --> Client : WIN
+Child -> Child   : close(socket)\n_exit(0)
+@enduml

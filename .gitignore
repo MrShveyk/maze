@@ -1,0 +1,8 @@
+build/
+doxygen/
+maze
+*.o
+*.d
+diagrams/*.png
+diagrams/*.svg
+.DS_Store

@@ -1,0 +1,35 @@
+@startuml
+title Подключение и инициализация партии
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundCorner 0
+skinparam defaultFontName "Helvetica"
+skinparam defaultFontSize 13
+skinparam sequence {
+    ArrowColor #111111
+    LifeLineBorderColor #111111
+    LifeLineBackgroundColor #FFFFFF
+    ParticipantBorderColor #111111
+    ParticipantBackgroundColor #FFFFFF
+    ParticipantFontColor #111111
+}
+
+participant "Игрок (клиент)"        as Client
+participant "Сервер\n(мастер-процесс)" as Master
+participant "Сессия\n(дочерний процесс)" as Child
+
+[-> Client : Запуск\n(-c -n <имя>)
+Client -> Master : TCP connect (порт 4321)
+Master -> Master : accept()
+Master -> Child  : fork()
+note right of Child
+    Дочерний процесс
+    закрывает слушающий
+    сокет и запускает
+    Session::run()
+end note
+Client -> Child  : HELLO <имя>\n(или PERF <имя>)
+Child -> Child   : Maze::generate(N)
+Child --> Client : SIZE <n>
+... игровой цикл (см. 02_move.puml) ...
+@enduml

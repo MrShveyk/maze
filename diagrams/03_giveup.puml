@@ -1,0 +1,24 @@
+@startuml
+title Сдача игрока
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundCorner 0
+skinparam defaultFontName "Helvetica"
+skinparam defaultFontSize 13
+skinparam sequence {
+    ArrowColor #111111
+    LifeLineBorderColor #111111
+    LifeLineBackgroundColor #FFFFFF
+    ParticipantBorderColor #111111
+    ParticipantBackgroundColor #FFFFFF
+    ParticipantFontColor #111111
+}
+
+participant "Игрок (клиент)" as Client
+participant "Сессия\n(дочерний процесс)" as Server
+
+Client -> Server : GIVEUP
+Server --> Client : LOSE
+Client -> Client : close(socket)
+Server -> Server : close(socket)\n_exit(0)
+@enduml

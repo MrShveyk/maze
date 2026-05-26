@@ -1,0 +1,35 @@
+CXX      ?= g++
+CXXFLAGS ?= -std=c++17 -Wall -Wextra -Wpedantic -O2
+LDFLAGS  ?=
+
+SRC_DIR  := src
+BUILD    := build
+TARGET   := maze
+
+SRCS := $(wildcard $(SRC_DIR)/*.cpp)
+OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD)/%.o,$(SRCS))
+DEPS := $(OBJS:.o=.d)
+
+.PHONY: all clean docs diagrams run-server run-client
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+
+$(BUILD)/%.o: $(SRC_DIR)/%.cpp | $(BUILD)
+	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD):
+	mkdir -p $(BUILD)
+
+clean:
+	rm -rf $(BUILD) $(TARGET) doxygen
+
+docs:
+	doxygen Doxyfile
+
+diagrams:
+	plantuml -tpng diagrams/*.puml
+
+-include $(DEPS)
