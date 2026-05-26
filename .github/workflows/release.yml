@@ -1,0 +1,94 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    name: Linux ${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            cxx: g++
+            apt: ""
+          - arch: arm64
+            cxx: aarch64-linux-gnu-g++
+            apt: "g++-aarch64-linux-gnu"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cross-compiler
+        if: matrix.apt != ''
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ${{ matrix.apt }}
+
+      - name: Build
+        run: |
+          make -j"$(nproc)" \
+            CXX="${{ matrix.cxx }}" \
+            EXTRA_CXXFLAGS="-static-libstdc++ -static-libgcc"
+          mv maze "maze-linux-${{ matrix.arch }}"
+          file "maze-linux-${{ matrix.arch }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: maze-linux-${{ matrix.arch }}
+          path: maze-linux-${{ matrix.arch }}
+          if-no-files-found: error
+
+  build-macos:
+    name: macOS universal (arm64 + x86_64)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build universal binary
+        run: |
+          make -j"$(sysctl -n hw.ncpu)" \
+            CXX=clang++ \
+            EXTRA_CXXFLAGS="-arch arm64 -arch x86_64" \
+            EXTRA_LDFLAGS="-arch arm64 -arch x86_64"
+          mv maze maze-macos-universal
+          file maze-macos-universal
+          lipo -info maze-macos-universal
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: maze-macos-universal
+          path: maze-macos-universal
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub release
+    needs: [build-linux, build-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Show files
+        run: ls -lh dist
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true
