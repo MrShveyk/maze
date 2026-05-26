@@ -1,0 +1,26 @@
+services:
+  server:
+    build: .
+    image: maze:latest
+    container_name: maze-server
+    command: ["-s", "-p", "4321"]
+    ports:
+      - "4321:4321"
+    networks:
+      - maze-net
+    restart: unless-stopped
+
+  client:
+    image: maze:latest
+    profiles: ["client"]
+    depends_on:
+      - server
+    stdin_open: true
+    tty: true
+    networks:
+      - maze-net
+    command: ["-c", "-a", "server", "-p", "4321", "-n", "player"]
+
+networks:
+  maze-net:
+    driver: bridge

@@ -1,0 +1,15 @@
+.git
+.gitignore
+.DS_Store
+build/
+doxygen/
+maze
+*.o
+*.d
+diagrams/*.png
+diagrams/*.svg
+Doxyfile
+docker-compose.yml
+Dockerfile
+.dockerignore
+README.md

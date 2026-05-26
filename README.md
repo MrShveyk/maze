@@ -157,6 +157,54 @@ plantuml -tpng diagrams/*.puml
 последовательностями команд для измерения throughput. Клиент включает
 этот режим флагом `-t`.
 
+## Запуск в Docker
+
+В репозитории есть `Dockerfile` (multi-stage сборка: `debian:bookworm-slim`
+для компиляции и для рантайма) и `docker-compose.yml` с двумя сервисами:
+`server` (запускается по умолчанию) и `client` (профиль `client`,
+запускается вручную для интерактивной сессии).
+
+Сборка образа:
+
+```bash
+make docker-build           # docker build -t maze:latest .
+```
+
+Поднять сервер в фоне (он слушает порт `4321` хоста):
+
+```bash
+make docker-server          # docker compose up -d --build server
+docker compose logs -f server
+```
+
+Запустить клиента в том же compose-проекте (на одной сети с сервером,
+адрес сервера — DNS-имя `server`):
+
+```bash
+make docker-client NAME=player
+# или вручную:
+docker compose run --rm client -c -a server -p 4321 -n player
+```
+
+Клиент запрашивает терминал (`stdin_open: true`, `tty: true`), поэтому
+управление `w/a/s/d/q` работает как в нативном запуске.
+
+Можно запустить несколько клиентов параллельно — сервер форкается на
+каждое подключение, и compose поднимет отдельный контейнер на каждый
+вызов `docker compose run`.
+
+Подключиться к серверу в Docker с хоста, не из compose:
+
+```bash
+./maze -c -a 127.0.0.1 -p 4321 -n player
+```
+
+Остановить всё:
+
+```bash
+make docker-down            # docker compose down
+```
+
 ## Проверка по локальной сети
 
 1. На сервере: узнать IP — `ip addr` (Linux) / `ifconfig` (macOS).
