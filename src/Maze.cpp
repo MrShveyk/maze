@@ -19,6 +19,10 @@ Maze::Maze(unsigned size)
       goal_y_(static_cast<int>(size) - 1),
       gen_(std::random_device{}()) {}
 
+void Maze::seed(std::uint32_t value) {
+    gen_.seed(value);
+}
+
 Wall Maze::makeWall(Cell a, Cell b) {
     if (b < a) {
         std::swap(a, b);

@@ -13,6 +13,7 @@
 #ifndef P2P_GAME_MAZE_HPP
 #define P2P_GAME_MAZE_HPP
 
+#include <cstdint>
 #include <ostream>
 #include <random>
 #include <set>
@@ -76,6 +77,11 @@ class Maze {
 public:
     /** Создаёт поле заданного размера. */
     explicit Maze(unsigned size = 3u);
+
+    /** Переинициализирует ГСЧ заданным seed.
+     *  Используется для воспроизводимой генерации лабиринта.
+     */
+    void seed(std::uint32_t value);
 
     /** Случайно расставляет стены с сохранением достижимости цели.
      *  @param wall_count желаемое число стен.

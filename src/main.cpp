@@ -6,6 +6,7 @@
  *  перекомпиляции — в зависимости от флага командной строки.
  */
 
+#include <cstdint>
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
@@ -21,11 +22,13 @@ namespace {
 void printUsage(const char* prog, std::ostream& os = std::cerr) {
     os << "Использование:\n"
        << "  Сервер:  " << prog
-       << " -s [-p порт] [-m лимит_ходов] [-z размер] [-w стен]\n"
+       << " -s [-p порт] [-m лимит_ходов] [-z размер] [-w стен] [-r seed]\n"
        << "    -p порт          порт прослушивания (по умолчанию 4321)\n"
        << "    -m лимит_ходов   число ходов в обычном режиме (по умолчанию 10)\n"
        << "    -z размер        размер стороны лабиринта (по умолчанию 3)\n"
        << "    -w стен          число стен (по умолчанию size*(size-1))\n"
+       << "    -r seed          seed ГСЧ (uint32) — воспроизводимый лабиринт;\n"
+       << "                     если не задан, берётся std::random_device\n"
        << "\n"
        << "  Клиент:  " << prog
        << " -c -n имя [-a адрес] [-p порт] [-t]\n"
@@ -54,7 +57,7 @@ int runServer(int argc, char** argv) {
 
     ::optind = 1;
     int opt;
-    while ((opt = getopt(argc, argv, "scp:m:z:w:n:a:th")) != -1) {
+    while ((opt = getopt(argc, argv, "scp:m:z:w:n:a:tr:h")) != -1) {
         switch (opt) {
             case 'p':
                 if (parsePort(optarg, port) != 0) return 1;
@@ -85,6 +88,15 @@ int runServer(int argc, char** argv) {
                 }
                 cfg.wall_count = static_cast<unsigned>(v);
                 wall_count_set = true;
+                break;
+            }
+            case 'r': {
+                const long long v = std::atoll(optarg);
+                if (v < 0 || v > static_cast<long long>(UINT32_MAX)) {
+                    std::cerr << "Ошибка: seed должен быть в диапазоне 0..4294967295\n";
+                    return 1;
+                }
+                cfg.seed = static_cast<std::uint32_t>(v);
                 break;
             }
             case 's':
@@ -126,7 +138,7 @@ int runClient(int argc, char** argv) {
 
     ::optind = 1;
     int opt;
-    while ((opt = getopt(argc, argv, "scp:m:z:w:n:a:th")) != -1) {
+    while ((opt = getopt(argc, argv, "scp:m:z:w:n:a:tr:h")) != -1) {
         switch (opt) {
             case 'a':
                 server_ip = optarg;
@@ -145,6 +157,7 @@ int runClient(int argc, char** argv) {
             case 'm':
             case 'z':
             case 'w':
+            case 'r':
                 break;
             case 'h':
             default:

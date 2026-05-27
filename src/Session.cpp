@@ -130,13 +130,22 @@ void Session::run() {
     const auto tokens = protocol::tokenize(init);
     handleInit(tokens);
 
+    if (cfg_.seed) {
+        maze_.seed(*cfg_.seed);
+    }
     maze_.generate(cfg_.wall_count);
     sendLine(protocol::makeSize(maze_.size()));
 
     std::cout << "[session " << getpid() << "] игрок '" << player_name_
               << (perf_mode_ ? "' (тест.режим)" : "'")
               << ", поле " << maze_.size() << "x" << maze_.size()
-              << std::endl;
+              << ", seed=";
+    if (cfg_.seed) {
+        std::cout << *cfg_.seed;
+    } else {
+        std::cout << "random";
+    }
+    std::cout << std::endl;
 
     while (true) {
         const std::string line = recvLine();

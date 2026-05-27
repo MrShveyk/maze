@@ -9,6 +9,8 @@
 #ifndef P2P_GAME_SESSION_HPP
 #define P2P_GAME_SESSION_HPP
 
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -21,6 +23,7 @@ struct SessionConfig {
     int max_moves = 10;     ///< Лимит ходов в обычном режиме.
     unsigned maze_size = 3; ///< Размер стороны квадратного поля.
     unsigned wall_count = 6; ///< Число генерируемых стен.
+    std::optional<std::uint32_t> seed; ///< Seed ГСЧ. Если пуст — std::random_device.
 };
 
 /** Игровая сессия: всё взаимодействие с одним клиентом. */

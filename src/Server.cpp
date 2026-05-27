@@ -74,7 +74,14 @@ void Server::run() {
     std::cout << "[server] слушаем порт " << port_
               << ", поле " << cfg_.maze_size << "x" << cfg_.maze_size
               << ", стен " << cfg_.wall_count
-              << ", лимит ходов " << cfg_.max_moves << std::endl;
+              << ", лимит ходов " << cfg_.max_moves
+              << ", seed=";
+    if (cfg_.seed) {
+        std::cout << *cfg_.seed << " (воспроизводимо)";
+    } else {
+        std::cout << "random";
+    }
+    std::cout << std::endl;
 
     while (true) {
         sockaddr_in client_addr{};
